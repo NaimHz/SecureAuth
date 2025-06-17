@@ -1,79 +1,84 @@
-# Exercice : Système d'authentification sécurisé avec Hono
+# Documentation des Routes
 
-## Objectif
-Créer une API REST sécurisée permettant la gestion des utilisateurs et des autorisations avec les technologies modernes.
-
-## Technologies requises
-- Framework Hono (TypeScript)
-- Zod pour la validation des données
-- Argon2 pour le hachage des mots de passe
-- AccessControl pour la gestion des ACL
-- JWT pour l'authentification
-
-## Informations importante
-La base du projet a déjà été codée pour vous, vous allez devoir vous concentrer sur ce qu'il manque pour que le projet fonctionne.
-Vous êtes libres de créer des fichiers et de vous organiser comme vous le souhaitez, le tout est de répondre aux exigences.
-
-Afin de tester vos routes, vous avez accès à des collection **Bruno** dans le dossier `password-acl`, j'assume que vous êtes assez familier avec
-ce programme car nous l'avons utilisé dans nos autres exercices.
-
-Vous trouverez aussi dans certains fichiers des notations en commentaire pour vous indiquer ce que vous devez faire
-
-n'oubliez pas de créer un .env sur la base de exemple.env pour que votre application puisse s'initialiser, pensez bien à utiliser de valeurs sécurisées et conforme à ce que nous avons évoqués dans les cours précédents ou dans le glossaire
-
-> Attention dans l'état actuel des choses l'application fonctionne mais ne repond pas aux exigences définies ci dessous, à vous de les implémenter pour que tout fonctionne comme convenu
-
-## Fonctionnalités à implémenter
-
-### 1. Gestion des utilisateurs
-- Inscription (register)
-- Connexion (login)
-- Déconnexion (logout)
-- Gestion des tokens (refresh)
-
-### 2. Sécurité
-- Validation des données entrantes avec Zod
-- Hachage sécurisé des mots de passe avec Argon2
-- Système de double token (access + refresh)
-- Protection contre les attaques courantes
-
-### 3. Contrôle d'accès
-- Implémentation de rôles (admin, user, guest)
-- Gestion fine des permissions avec AccessControl
-- Middleware de vérification des permissions
-- Gestion des ressources personnelles (own) et globales
-
-## Contraintes techniques
-1. Les mots de passe doivent :
-   - Avoir au moins 8 caractères
-   - Contenir au moins une lettre et un chiffre
-
-2. Le système de tokens doit :
-   - Utiliser un access token de courte durée
-   - Utiliser un refresh token de longue durée
-   - Permettre le renouvellement des tokens
-
-3. Les permissions doivent :
-   - Être héritées hiérarchiquement
-   - Distinguer les ressources personnelles
-   - Être vérifiées à chaque requête
-
-## Routes à implémenter
-```
-// Sans ACL
-POST /register    : Inscription d'un nouvel utilisateur
-POST /login      : Connexion d'un utilisateur
-POST /logout     : Déconnexion
-POST /refresh-token : Renouvellement du token
-
-//Avec ACL
-GET    /api/profile/:id : Consultation d'un profil (renvoyez une simple chaine de caractère ces routes sont là pour tester vos acl)
-POST   /api/data       : Création de données (pareil qu'au dessus)
-PUT    /api/data/:id   : Modification de données (pareil qu'au dessus)
-DELETE /api/data/:id   : Suppression de données (pareil qu'au dessus)
+## Configuration
+Renommez le fichier `example.env` en `.env` pour que les variables d'environnement soient prises en compte. Voici les variables disponibles dans le fichier `.env` :
+```properties
+JWT_SECRET=votre_secret_tres_long_et_aleatoire
+JWT_EXPIRES_IN=5s
+REFRESH_TOKEN_SECRET=autre_secret_tres_long_et_aleatoire
+REFRESH_TOKEN_EXPIRES_IN=100s
 ```
 
-## Bonus
-- Ajout d'éléments de sécurité pour eviter les params bombs, les requêtes malveillantes etc
-- Tests fonctionnels comme ceux présents en exemple
+---
 
+## Fonctionnement des ACL (Access Control List)
+Les ACL définissent les permissions pour différents rôles (`user`, `admin`) dans le projet. Voici ce qu'elles permettent :
+- **user** :
+  - Peut lire son propre profil.
+  - Peut créer, modifier et supprimer ses propres données.
+- **admin** :
+  - Peut lire, créer, modifier et supprimer les données ou profils de tous les utilisateurs.
+
+---
+
+## Fonctionnement des Tokens
+- **JWT_SECRET** : Utilisé pour signer les tokens JWT (JSON Web Token) qui authentifient les utilisateurs.
+- **JWT_EXPIRES_IN** : Durée de validité des tokens JWT.
+- **REFRESH_TOKEN_SECRET** : Utilisé pour signer les tokens de rafraîchissement.
+- **REFRESH_TOKEN_EXPIRES_IN** : Durée de validité des tokens de rafraîchissement.
+
+Les tokens JWT permettent de vérifier l'identité de l'utilisateur pour chaque requête. Lorsqu'un token expire, un token de rafraîchissement peut être utilisé pour en générer un nouveau sans nécessiter une nouvelle connexion.
+
+---
+
+## Routes sans ACL
+
+### POST /register
+- **Description** : Inscription d'un nouvel utilisateur.
+- **Corps de la requête** :
+  ```json
+  {
+    "username": "string",
+    "password": "string",
+    "role": "string",
+    "email": "string"
+  }
+  ```
+
+### POST /login
+- **Description** : Connexion d'un utilisateur.
+- **Corps de la requête** :
+  ```json
+  {
+    "username": "string",
+    "password": "string"
+  }
+  ```
+
+### POST /logout
+- **Description** : Déconnexion de l'utilisateur.
+
+### POST /refresh-token
+- **Description** : Renouvellement du token.
+- **Corps de la requête** :
+  ```json
+  {
+    "refreshToken": "string"
+  }
+  ```
+
+---
+
+## Routes avec ACL
+
+### GET /api/profile/:id
+- **Description** : Consultation d'un profil utilisateur.
+
+### POST /api/data
+- **Description** : Création de données utilisateur.
+
+### PUT /api/data/:id
+- **Description** : Modification des données utilisateur.
+
+### DELETE /api/data/:id
+- **Description** : Suppression des données utilisateur.

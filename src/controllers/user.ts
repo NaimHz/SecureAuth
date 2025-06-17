@@ -47,6 +47,7 @@ route.post('/register', zValidator('json', UserSchema), async (c) => {
       ...tokens
     }, 201);
   } catch (error) {
+    console.log(error);
     if (error instanceof z.ZodError) {
       return c.json({ error: error.errors }, 400);
     }
@@ -124,12 +125,15 @@ route.post('/logout', authMiddleware, async (c) => {
   try {
     const refreshToken = c.req.header('X-Refresh-Token');
 
+    console.log(refreshToken);
+    //
     if (refreshToken) {
       deleteRefreshToken(refreshToken);
     }
 
     return c.json({ message: 'Déconnexion réussie' });
   } catch (error) {
+    console.log(error)
     return c.json({ error: 'Erreur lors de la déconnexion' }, 500);
   }
 });

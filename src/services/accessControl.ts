@@ -2,6 +2,8 @@ import { AccessControl } from 'accesscontrol';
 
 const ac = new AccessControl();
 
-// Définissez vos permissions ici
+ac.grant('user').readOwn('profile');
+
+ac.grant('admin').readAny('profile');
 
 export { ac };
